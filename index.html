@@ -1,0 +1,205 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Latihan Soal Matematika: Pecahan</title>
+    <!-- Menggunakan MathJax untuk render simbol matematika LaTeX -->
+    <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
+    <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    <style>
+        body { font-family: 'Segoe UI', sans-serif; background-color: #f0f4f8; padding: 20px; color: #333; line-height: 1.6; }
+        .container { max-width: 700px; margin: auto; background: white; padding: 30px; border-radius: 16px; box-shadow: 0 10px 25px rgba(0,0,0,0.05); }
+        .header { text-align: center; margin-bottom: 25px; }
+        .card { border: 1px solid #e1e8ed; border-radius: 12px; margin-bottom: 20px; padding: 20px; transition: 0.2s; }
+        .card:hover { border-color: #3498db; }
+        #timerDisplay { font-size: 22px; font-weight: bold; color: #e74c3c; text-align: center; margin-bottom: 20px; background: #fdf2f2; padding: 10px; border-radius: 8px; border: 1px solid #fabfbf; }
+        .btn { width: 100%; padding: 15px; background: #3498db; color: white; border: none; border-radius: 10px; cursor: pointer; font-weight: bold; font-size: 16px; transition: 0.3s; }
+        .btn:hover { background: #2980b9; transform: translateY(-2px); box-shadow: 0 5px 15px rgba(52, 152, 219, 0.3); }
+        #quizSection, #resultSection { display: none; }
+        .option { display: flex; align-items: center; padding: 12px; border: 1px solid #eee; margin-top: 10px; border-radius: 8px; cursor: pointer; transition: 0.2s; }
+        .option:hover { background: #f0f7ff; border-color: #3498db; }
+        .option input { margin-right: 15px; transform: scale(1.2); }
+        .score-box { text-align: center; padding: 20px; }
+        .score-number { font-size: 80px; font-weight: bold; margin: 10px 0; color: #3498db; }
+        .detail-box { text-align: left; background: #f8f9fa; padding: 20px; border-radius: 10px; margin-top: 20px; border-left: 5px solid #3498db; }
+        .math-text { font-size: 1.1em; }
+        ul { padding-left: 20px; }
+        li { margin-bottom: 8px; }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <!-- Halaman Awal -->
+    <div id="landingSection">
+        <div class="header">
+            <h1 style="color: #2c3e50;">Latihan Soal Matematika</h1>
+            <p style="font-size: 1.2em; color: #7f8c8d;"><b>Operasi Hitung Campuran Pecahan</b></p>
+        </div>
+        <div class="card">
+            <b style="color: #2c3e50;">PERATURAN:</b>
+            <ul>
+                <li>Terdapat <b>10 soal</b> pilihan ganda.</li>
+                <li>Waktu pengerjaan: <b>10 menit</b> (1 menit per soal).</li>
+                <li>Dilarang berpindah tab atau aplikasi selama kuis.</li>
+                <li>Gunakan kertas buram untuk menghitung secara teliti.</li>
+            </ul>
+        </div>
+        <div class="card">
+            <label><b>NAMA LENGKAP:</b></label><br><br>
+            <input type="text" id="userName" style="width:95%; padding:14px; border: 2px solid #ddd; border-radius: 8px; font-size: 16px;" placeholder="Masukkan nama Anda...">
+        </div>
+        <button class="btn" onclick="mulaiKuis()">MULAI KUIS</button>
+    </div>
+
+    <!-- Halaman Kuis -->
+    <div id="quizSection">
+        <div id="timerDisplay">Sisa Waktu: <span id="time">10:00</span></div>
+        <div id="isiSoal"></div>
+        <button id="btnSelesai" class="btn" onclick="hitungDanTampilkanHasil()" style="background: #27ae60;">SELESAI & KIRIM JAWABAN</button>
+    </div>
+
+    <!-- Halaman Hasil -->
+    <div id="resultSection">
+        <div class="score-box">
+            <h2 style="color: #2c3e50;">Hasil Latihan</h2>
+            <p>Selamat <span id="resNama" style="font-weight: bold;"></span>, Anda telah menyelesaikan kuis!</p>
+            <div class="score-number" id="displaySkor">0</div>
+            <div class="detail-box" id="detailList"></div>
+            <p id="statusKirim" style="color: #888; font-style: italic; margin-top: 15px;">Menyimpan hasil...</p>
+            <button class="btn" style="background: #34495e; margin-top: 20px;" onclick="location.reload()">COBA LAGI</button>
+        </div>
+    </div>
+</div>
+
+<script>
+    // URL Google Apps Script Anda (Tetap menggunakan yang lama)
+    const scriptURL = 'https://script.google.com/macros/s/AKfycbwtZrYT9fkE9vRmg-nnCqQdWRQdiHsRnlxnU9mNDmiy8EnkpDVrMpakeXDMtfyra0Cp8A/exec';
+
+    // Data Soal dari PDF
+    const soalData = [
+        { q: "Nilai dari \\(\\frac{3}{4} \\times 5\\frac{1}{3} + 2\\frac{1}{2} \\div \\frac{5}{6}\\) adalah ....", a: ["6", "6\\(\\frac{1}{2}\\)", "7", "7\\(\\frac{1}{4}\\)", "8"], k: 2 },
+        { q: "Nilai dari \\(4\\frac{1}{5} \\div \\frac{7}{10} - 1\\frac{1}{2} \\times \\frac{4}{3}\\) adalah ....", a: ["2", "3", "4", "5", "6"], k: 2 },
+        { q: "Nilai dari \\(\\frac{2}{7} \\times 3\\frac{1}{2} + 4\\frac{4}{5} \\div \\frac{8}{15}\\) adalah ....", a: ["8", "9", "10", "11", "12"], k: 2 },
+        { q: "Nilai dari \\(6\\frac{2}{3} \\times \\frac{3}{5} + 2\\frac{1}{4} \\div \\frac{3}{8}\\) adalah ....", a: ["8", "9", "10", "11", "12"], k: 2 },
+        { q: "Nilai dari \\(5\\frac{5}{8} \\div \\frac{3}{4} + \\frac{2}{3} \\times 4\\frac{1}{2}\\) adalah ....", a: ["10\\(\\frac{1}{2}\\)", "10\\(\\frac{3}{4}\\)", "11\\(\\frac{1}{4}\\)", "11\\(\\frac{1}{2}\\)", "12"], k: 0 },
+        { q: "Nilai dari \\(\\frac{4}{9} \\times 6\\frac{3}{4} + 1\\frac{2}{3} \\div \\frac{5}{6}\\) adalah ....", a: ["4", "4\\(\\frac{1}{2}\\)", "5", "5\\(\\frac{1}{3}\\)", "6"], k: 2 },
+        { q: "Nilai dari \\(7\\frac{1}{2} \\times \\frac{2}{3} + 2\\frac{2}{5} \\div \\frac{4}{15}\\) adalah ....", a: ["12", "13", "14", "15", "16"], k: 2 },
+        { q: "Nilai dari \\(\\frac{5}{12} \\times 4\\frac{4}{5} + 3\\frac{3}{7} \\div \\frac{8}{14}\\) adalah ....", a: ["6", "7", "8", "9", "10"], k: 2 },
+        { q: "Nilai dari \\(8\\frac{1}{3} \\div \\frac{5}{6} - \\frac{3}{4} \\times 2\\frac{2}{3}\\) adalah ....", a: ["6", "7", "8", "9", "10"], k: 2 },
+        { q: "Nilai dari \\(\\frac{7}{9} \\times 4\\frac{1}{2} + 5\\frac{1}{3} \\div 1\\frac{1}{3}\\) adalah ....", a: ["6", "7", "7\\(\\frac{1}{4}\\)", "7\\(\\frac{3}{4}\\)", "8"], k: 1 }
+    ];
+
+    let timer;
+    let tabPindahCount = 0;
+
+    // Fitur Anti-Contek (Deteksi pindah tab)
+    window.onblur = function() {
+        if (document.getElementById('quizSection').style.display === 'block') {
+            tabPindahCount++;
+            if (tabPindahCount >= 2) {
+                alert("PELANGGARAN: Anda keluar halaman lebih dari sekali. Kuis dihentikan otomatis!");
+                hitungDanTampilkanHasil();
+            } else {
+                alert("PERINGATAN: Jangan membuka tab atau aplikasi lain!");
+            }
+        }
+    };
+
+    function mulaiKuis() {
+        const nama = document.getElementById('userName').value;
+        if (!nama.trim()) { alert("Silakan masukkan nama Anda!"); return; }
+        
+        document.getElementById('landingSection').style.display = 'none';
+        document.getElementById('quizSection').style.display = 'block';
+
+        let html = "";
+        soalData.forEach((s, i) => {
+            html += `<div class='card'>
+                        <div class='math-text'><b>${i+1}. ${s.q}</b></div>
+                        <div style='margin-top: 10px;'>`;
+            s.a.forEach((opt, idx) => {
+                html += `<label class='option'>
+                            <input type='radio' name='q${i}' value='${idx}'> 
+                            <span>${String.fromCharCode(65+idx)}. ${opt}</span>
+                         </label>`;
+            });
+            html += `</div></div>`;
+        });
+        document.getElementById('isiSoal').innerHTML = html;
+
+        // Render ulang MathJax agar simbol matematika muncul
+        if (window.MathJax) {
+            MathJax.typeset();
+        }
+
+        let timeLeft = 10 * 60; // 10 Menit
+        timer = setInterval(() => {
+            timeLeft--;
+            let min = Math.floor(timeLeft / 60);
+            let sec = timeLeft % 60;
+            document.getElementById('time').innerText = `${min}:${sec < 10 ? '0'+sec : sec}`;
+            if (timeLeft <= 0) { 
+                clearInterval(timer); 
+                alert("Waktu habis!"); 
+                hitungDanTampilkanHasil(); 
+            }
+        }, 1000);
+    }
+
+    function hitungDanTampilkanHasil() {
+        clearInterval(timer);
+        window.onblur = null;
+
+        const nama = document.getElementById('userName').value;
+        let nomorBenar = [];
+        let nomorSalah = [];
+
+        soalData.forEach((s, i) => {
+            const rbg = document.getElementsByName('q' + i);
+            let terpilih = -1;
+            for (let rb of rbg) {
+                if (rb.checked) terpilih = parseInt(rb.value);
+            }
+            if (terpilih === s.k) {
+                nomorBenar.push(i + 1);
+            } else {
+                nomorSalah.push(i + 1);
+            }
+        });
+
+        const totalSkor = Math.round((nomorBenar.length / soalData.length) * 100);
+        document.getElementById('displaySkor').innerText = totalSkor;
+        document.getElementById('displaySkor').style.color = totalSkor < 70 ? "#e74c3c" : "#27ae60";
+
+        document.getElementById('quizSection').style.display = 'none';
+        document.getElementById('resultSection').style.display = 'block';
+        document.getElementById('resNama').innerText = nama;
+        document.getElementById('detailList').innerHTML = 
+            `✅ <b>Jawaban Benar:</b> ${nomorBenar.join(", ") || "Tidak ada"}<br><br>` + 
+            `❌ <b>Jawaban Salah:</b> ${nomorSalah.join(", ") || "Tidak ada"}`;
+
+        // Kirim data ke Google Sheets
+        fetch(scriptURL, { 
+            method: 'POST', 
+            mode: 'no-cors',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                nama: nama,
+                skor: totalSkor,
+                nomorBenar: nomorBenar.join(", "),
+                nomorSalah: nomorSalah.join(", ")
+            })
+        }).then(() => {
+            document.getElementById('statusKirim').innerText = "Data berhasil disimpan!";
+            document.getElementById('statusKirim').style.color = "#27ae60";
+        }).catch(() => {
+            document.getElementById('statusKirim').innerText = "Gagal menyimpan data ke cloud.";
+            document.getElementById('statusKirim').style.color = "#e74c3c";
+        });
+    }
+</script>
+
+</body>
+</html>
